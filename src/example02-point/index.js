@@ -56,13 +56,13 @@ function main() {
 
   //检查编译状态
   if (!gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS)) {
-    alert('An error occurred compiling the shaders: ' + gl.getShaderInfoLog(shader));
-    gl.deleteShader(shader);
+    alert('An error occurred compiling the shaders: ' + gl.getShaderInfoLog(vertexShader));
+    gl.deleteShader(vertexShader);
     return;
   }
   if (!gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS)) {
-    alert('An error occurred compiling the shaders: ' + gl.getShaderInfoLog(shader));
-    gl.deleteShader(shader);
+    alert('An error occurred compiling the shaders: ' + gl.getShaderInfoLog(fragmentShader));
+    gl.deleteShader(fragmentShader);
     return;
   }
 

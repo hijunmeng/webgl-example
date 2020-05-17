@@ -5,35 +5,35 @@
 const vsSource =
   `
     attribute vec4 aVertexPosition;//attribute只能在顶点着色器中使用
-    attribute vec4 aVertexColor;
+    attribute vec2 aTextureCoord;
 
     uniform mat4 uModelViewMatrix;//uniform修饰的可以在顶点和片元着色器使用
     uniform mat4 uProjectionMatrix;
 
-    varying lowp vec4 vColor; //传递给片元着色器的变量，片元着色器接收到会是已经插值过的值
-
+    varying highp vec2 vTextureCoord;
 
     void main() {
       gl_Position = uProjectionMatrix * uModelViewMatrix * aVertexPosition;
-      vColor = aVertexColor;
+      vTextureCoord = aTextureCoord;
     }
   `;
 
 //片段着色器
 const fsSource =
   `
-    varying lowp vec4 vColor; //接收顶点着色器传递的插值，只要保持与顶点着色器的声明一致即可接收到值
-
-        void main() {
-         // gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
-          gl_FragColor = vColor;
+    varying highp vec2 vTextureCoord;
+    uniform sampler2D uSampler;
+        void main() {   
+          gl_FragColor = texture2D(uSampler,vTextureCoord.st);
         }
       `;
 
 let gl;
 let programInfo;
 let rotate = 0.0;
+let cubeTexture;
 main();
+loadTexture();
 requestAnimationFrame(render);
 
 
@@ -51,6 +51,29 @@ function render(now) {
   updateDatas();//更新数据
   draw();//绘制
   requestAnimationFrame(render);
+
+}
+function isPowerOf2(value) {
+  return (value & (value - 1)) == 0;
+}
+
+function loadTexture(){
+  
+  let cubeImage = new Image();
+  cubeImage.onload = function() { 
+    gl.bindTexture(gl.TEXTURE_2D, cubeTexture);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, cubeImage);
+    if (isPowerOf2(cubeImage.width) && isPowerOf2(cubeImage.height)) {
+      gl.generateMipmap(gl.TEXTURE_2D);//宽和高都是2的幂次方时才能使用多级纹理，否则使用后会是黑屏
+   } else {
+      //不是2的幂次方则需要以下设置才能显示
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+   }
+  
+  }
+  cubeImage.src = "../../assets/image/test.jpg";
 
 }
 
@@ -90,11 +113,12 @@ function main() {
   programInfo = {
     attribLocations: {
       vertexPosition: gl.getAttribLocation(program, 'aVertexPosition'),
-      vertexColor: gl.getAttribLocation(program, 'aVertexColor'),
+      textureCoord :gl.getAttribLocation(program, "aTextureCoord"),
     },
     uniformLocations: {
       projectionMatrix: gl.getUniformLocation(program, 'uProjectionMatrix'),
       modelViewMatrix: gl.getUniformLocation(program, 'uModelViewMatrix'),
+      cubeTexture:gl.getUniformLocation(program, "uSampler")
     },
   };
 
@@ -120,8 +144,8 @@ function main() {
     modelViewMatrix,     // 要被平移的矩阵
     [0.0, 0.0, -6.0]);  // xyz分别表示xyz方向上的平移，-6.0表示在z轴向内平移6个单位
 
-//此种方式将每个面的四个顶点划为一组，因此可以指定四个顶点为同一颜色，也就能为每个面指定颜色了
-  //也可以在每一行后面增加4个元素用来表示颜色，之后vertexAttribPointer用size=3,stride=28,offset=0和size=4,stride=28,offset=12即可分离出顶点位置和颜色
+
+//也可以在每一行后面增加2个元素用来表示纹理坐标，之后vertexAttribPointer用size=3,stride=20,offset=0和size=2,stride=20,offset=12即可分离出顶点位置和纹理坐标
 const positions = [
     // Front face
     -1.0, -1.0,  1.0,
@@ -163,31 +187,48 @@ const positions = [
   gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
   
+let  cubeVerticesTextureCoordBuffer = gl.createBuffer();
+gl.bindBuffer(gl.ARRAY_BUFFER, cubeVerticesTextureCoordBuffer);
   
-  const faceColors = [
-    [1.0,  1.0,  1.0,  1.0],    // Front face: white
-    [1.0,  0.0,  0.0,  1.0],    // Back face: red
-    [0.0,  1.0,  0.0,  1.0],    // Top face: green
-    [0.0,  0.0,  1.0,  1.0],    // Bottom face: blue
-    [1.0,  1.0,  0.0,  1.0],    // Right face: yellow
-    [1.0,  0.0,  1.0,  1.0],    // Left face: purple
-  ];
+var textureCoordinates = [
+  // Front
+  0.0,  0.0,
+  1.0,  0.0,
+  1.0,  1.0,
+  0.0,  1.0,
+  // Back
+  0.0,  0.0,
+  1.0,  0.0,
+  1.0,  1.0,
+  0.0,  1.0,
+  // Top
+  0.0,  0.0,
+  1.0,  0.0,
+  1.0,  1.0,
+  0.0,  1.0,
+  // Bottom
+  0.0,  0.0,
+  1.0,  0.0,
+  1.0,  1.0,
+  0.0,  1.0,
+  // Right
+  0.0,  0.0,
+  1.0,  0.0,
+  1.0,  1.0,
+  0.0,  1.0,
+  // Left
+  0.0,  0.0,
+  1.0,  0.0,
+  1.0,  1.0,
+  0.0,  1.0
+];
 
-  // Convert the array of colors into a table for all the vertices.
+gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoordinates),gl.STATIC_DRAW);
+gl.enableVertexAttribArray(programInfo.attribLocations.textureCoord);
+gl.vertexAttribPointer(programInfo.attribLocations.textureCoord, 2, gl.FLOAT, false, 0, 0);
 
-  var colors = [];
 
-  for (var j = 0; j < faceColors.length; ++j) {
-    const c = faceColors[j];
-
-    // Repeat each color four times for the four vertices of the face
-    colors = colors.concat(c, c, c, c);
-  }
-  const colorBuffer = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW);
-
- 
+  
   const size = 3;  // 指定每个顶点属性的组成数量，必须是1，2，3或4
   const type = gl.FLOAT;    // the data in the buffer is 32bit floats
   const normalize = false;  // 是否归一化
@@ -205,9 +246,6 @@ const positions = [
   gl.enableVertexAttribArray(programInfo.attribLocations.vertexPosition);//激活attribute
 
 
-  gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
-  gl.vertexAttribPointer(programInfo.attribLocations.vertexColor, 4, gl.FLOAT, false, 0, 0);
-  gl.enableVertexAttribArray(programInfo.attribLocations.vertexColor);
 
   //这里的内容是positions每一行的下标
   var cubeVertexIndices = [
@@ -230,6 +268,15 @@ const positions = [
     programInfo.uniformLocations.modelViewMatrix,
     false,
     modelViewMatrix);
+
+
+    cubeTexture = gl.createTexture();
+    //激活纹理单元0，总共有32个单元
+    gl.activeTexture(gl.TEXTURE0);
+    //绑定到纹理激活的纹理单元
+    gl.bindTexture(gl.TEXTURE_2D, cubeTexture);
+    //告诉着色器我们将材质绑定到材质单元0
+    gl.uniform1i(programInfo.uniformLocations.cubeTexture, 0);
 
 }
 
@@ -259,8 +306,8 @@ function initShaders(gl, vertexShaderSource, fragmentShaderSource) {
   gl.shaderSource(fragmentShader, fragmentShaderSource);
   gl.compileShader(vertexShader);
   gl.compileShader(fragmentShader);
-   //检查编译状态
-   if (!gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS)) {
+  //检查编译状态
+  if (!gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS)) {
     alert('An error occurred compiling the shaders: ' + gl.getShaderInfoLog(vertexShader));
     gl.deleteShader(vertexShader);
     return null;

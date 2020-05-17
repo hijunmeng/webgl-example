@@ -180,22 +180,22 @@ function initShaders(gl, vertexShaderSource, fragmentShaderSource) {
   gl.shaderSource(fragmentShader, fragmentShaderSource);
   gl.compileShader(vertexShader);
   gl.compileShader(fragmentShader);
-  //检查编译状态
-  if (!gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS)) {
-    alert('An error occurred compiling the shaders: ' + gl.getShaderInfoLog(shader));
-    gl.deleteShader(shader);
+   //检查编译状态
+   if (!gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS)) {
+    alert('An error occurred compiling the shaders: ' + gl.getShaderInfoLog(vertexShader));
+    gl.deleteShader(vertexShader);
     return null;
   }
   if (!gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS)) {
-    alert('An error occurred compiling the shaders: ' + gl.getShaderInfoLog(shader));
-    gl.deleteShader(shader);
+    alert('An error occurred compiling the shaders: ' + gl.getShaderInfoLog(fragmentShader));
+    gl.deleteShader(fragmentShader);
     return null;
   }
   gl.attachShader(program, vertexShader);
   gl.attachShader(program, fragmentShader);
   gl.linkProgram(program);
   if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-    alert('Unable to initialize the shader program: ' + gl.getProgramInfoLog(shaderProgram));
+    alert('Unable to initialize the shader program: ' + gl.getProgramInfoLog(program));
     return null;
   }
   gl.useProgram(program);
