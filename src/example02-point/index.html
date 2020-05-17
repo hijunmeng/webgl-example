@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script id="vertexShader" type="x-shader/x-vertex">
+        attribute vec4 aPosition;
+        attribute float  aPointSize;
+        void main() {
+          gl_Position = aPosition;
+          gl_PointSize = aPointSize;
+        }
+    </script>
+    <script id="fragmentShader" type="x-shader/x-fragment">
+        void main() {
+            gl_FragColor = vec4(1.0, 0.0, 1.0, 1.0);
+        }
+    </script>
+</head>
+
+<body>
+    <p>webgl演示--绘制一个点</p>
+    <p>绘制点并指定点大小；两种shader源代码书写方式</p>
+    <canvas id="canvas-webgl" width="800" height="480">
+        Your browser doesn't appear to support the HTML5 <code>&lt;canvas&gt;</code> element.
+    </canvas>
+    <script src="./gl-matrix.js"></script>
+    <script src="./index.js"></script>
+</body>
+
+</html>
