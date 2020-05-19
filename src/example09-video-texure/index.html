@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <p>webgl演示--视频纹理</p>
+    <p>以video播放的视频作为纹理不断更新到物体上</p>
+    <video id="video" src="../../assets/video/h265_1080_608.mp4" controls="controls" width="512" height="256"></video>
+    <canvas id="canvas-webgl" width="800" height="480">
+        Your browser doesn't appear to support the HTML5 <code>&lt;canvas&gt;</code> element.
+    </canvas>
+    <script src="../common/gl-matrix.js"></script>
+    <script type="module" src="./index.js"></script>
+</body>
+</html>
